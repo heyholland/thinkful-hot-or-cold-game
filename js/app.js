@@ -1,118 +1,147 @@
-$(document).ready(function() {
+$(document).ready(function () {
 
-    var secretNumber = 0;
-    var userGuess = 0;
-    var guessCount = 0;
-    var finish = false;
-
-    /*--- Display information modal box ---*/
-    $(".what").click(function() {
-        $(".overlay").fadeIn(1000);
-
-    });
-
-    /*--- Hide information modal box ---*/
-    $("a.close").click(function() {
-        $(".overlay").fadeOut(1000);
-    });
-
-    function secretNumberGenerator() {
-        secretNumber = (Math.floor(Math.random() * 100));
-        console.log("Secret Number =" + secretNumber);
+    // Function to generate the random number
+    function secretNum(min, max) {
+        secretNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+        return secretNumber;
     }
 
-    secretNumberGenerator();
+    var secretNumber = secretNum(1, 100);
+    console.log("Secret Number: " + secretNumber);
 
-    $(".new").click(function() {
-        newGame();
-        console.log("checking newgame click");
-    });
+    //change default bg color to neutral grey
+    document.body.style.backgroundColor = '#333';
 
-    function newGame() {
-        guessCount = 0;
-        finish = false;
-        $('#userGuess').val('');
-        $('#count').text(guessCount);
-        $("#guessList li").remove();
-        secretNumber = (Math.floor(Math.random() * 100));
-        feedback("Make your guess!!");
-        console.log("works fine !! new secret number is " + secretNumber);
-    }
+    var oldGuess = 0;
 
-    function setCount() {
-        $("#count").text(guessCount);
-    }
+    //set the maximum number of guesses
+    var counter = 30;
+    $('#count').text(counter);
 
-    function feedback(feedback) {
-        $("#feedback").text(feedback);
-    }
+    $('.new').on('click', newGame);
 
-    function comparison() {
-        if (userGuess / secretNumber === 1) {
-            feedback("Congrats !! You Win");
-            finish = true;
-        } else if (Math.abs(secretNumber - userGuess) > 60.5) {
-            feedback("Arctic!!");
-            document.body.style.backgroundColor = '#002cb3';
-        } else if (Math.abs(secretNumber - userGuess) > 50.5) {
-            feedback("Its freezing");
-            document.body.style.backgroundColor = '#0038e6';
-        } else if (Math.abs(secretNumber - userGuess) > 40.5) {
-            feedback("Its cold out there !! Put a coat on!!");
-            document.body.style.backgroundColor = '#3333cc';
-        } else if (Math.abs(secretNumber - userGuess) > 30.5) {
-            feedback("Its cold!!");
-            document.body.style.backgroundColor = '#6600ff';
-        } else if (Math.abs(secretNumber - userGuess) > 20.5) {
-            feedback("Its warm-ish!!");
-            document.body.style.backgroundColor = '#8533ff';
-        } else if (Math.abs(secretNumber - userGuess) > 15.5) {
-            feedback("Its getting warm !!");
-            document.body.style.backgroundColor = '#b84dff';
-        } else if (Math.abs(secretNumber - userGuess) > 10.5) {
-            feedback("Its warm!!");
-            document.body.style.backgroundColor = '#fc0446';
-        } else if (Math.abs(secretNumber - userGuess) > 0.5) {
-            feedback("Its hotter now !!");
-            document.body.style.backgroundColor = '#ff0404';
+    // Function to implement a simple validation of the iser input
+    function validation(guessedNumber) {
+        console.log("Guessed Number: " + guessedNumber)
+        if (guessedNumber % 1 !== 0) {
+            alert('You must enter an integer value!!');
+            $('#userGuess').val('');
+            return false;
+        } else if (guessedNumber < 1 || guessedNumber > 100) {
+            alert('Please guess a number between 1 to 100!!');
+            $('#userGuess').val('');
+            return false;
         } else {
-
-        }
-    }
-
-    function checkInput() {
-        if (isNaN(userGuess)) {
-            alert("Please enter a number from 1 to 100!");
-
-        } else if (userGuess === "") {
-            alert("Please enter Something!!");
-        } else if (userGuess < 0 || userGuess > 100) {
-            alert("Please enter a number from 1 to 100!");
-        } else if (userGuess === " ") {
-            alert("Please enter a number!!");
-        } else if (userGuess === "  ") {
-            alert("Please enter a number!!");
-        } else if (userGuess === "   ") {
-            alert("Please enter a number!!");
-        } else {
-            comparison();
-            console.log("User guess" + userGuess);
-            $("#userGuess").val();
-            guessCount++;
-            setCount(guessCount);
-            $('ul#guessList').append("<li>" + userGuess + "<li>");
+            guessFeedback(secretNumber, guessedNumber);
         }
 
+        if (guessedNumber != '' && guessedNumber <= 100) {
+            guessFeedback(secretNumber, guessedNumber);
+            counter--;
+            guessHistory();
+            $('#userGuess').val('');
+        } else {
+            alert('Please guess a number between 1 to 100!!');
+            $('#userGuess').val('');
+        }
+        if (counter <= 0) {
+            $('#feedback').text('Game Over!');
+            document.getElementById("userGuess").disabled = true;
+            document.getElementById("guessButton").disabled = true;
+            alert('The Secret number was ' + secretNumber + ' ! Better luck next time !!');
+        }
+        guessCounter(counter);
     }
 
-    $("form").submit(function(e) {
-        e.preventDefault();
-        if (!finish) {
-            userGuess = $("#userGuess").val();
-            checkInput();
-        } else {
-            setFeedback("Please Restart the Game and Play again!!");
+    $('#guessButton').on('click', function () {
+        var guessedNumber = parseInt($('#userGuess').val(), 10);
+        var newGuess = parseInt(guessedNumber);
+
+        validation(guessedNumber);
+
+        if (oldGuess !== 0 && guessedNumber >= 1 && guessedNumber <= 100) {
+            relativeFeedback(secretNumber, oldGuess, newGuess);
         }
+        oldGuess = newGuess;
+    });
+
+    $('#userGuess').on('keypress', function (e) {
+        if (e.which == 13) {
+            e.preventDefault();
+            var guessedNumber = parseInt($('#userGuess').val(), 10);
+            var newGuess = parseInt(guessedNumber);
+
+            validation(guessedNumber);
+
+            if (oldGuess !== 0 && guessedNumber >= 1 && guessedNumber <= 100) {
+                relativeFeedback(secretNumber, oldGuess, newGuess);
+            }
+            oldGuess = newGuess;
+        }
+    });
+
+    // Display information modal box
+    $('.what').click(function () {
+        $('.overlay').fadeIn(1000);
+    });
+
+    // Hide information modal box
+    $('a.close').click(function () {
+        $('.overlay').fadeOut(1000);
     });
 
 });
+
+// Function to start a new game
+function newGame() {
+    document.location.reload(true);
+}
+
+// Function to provide feedback to the user
+function guessFeedback(secretNumber, guessedNumber) {
+    var difference = Math.abs(secretNumber - guessedNumber);
+    if (difference >= 50) {
+        $('#feedback').text('Ice Cold!');
+        document.body.style.backgroundColor = '#002cb3';
+    } else if (difference >= 30 && difference <= 49) {
+        $('#feedback').text('Cold!');
+        document.body.style.backgroundColor = '#3333cc';
+    } else if (difference >= 20 && difference <= 29) {
+        $('#feedback').text('Warm!');
+        document.body.style.backgroundColor = '#8533ff';
+    } else if (difference >= 10 && difference <= 19) {
+        $('#feedback').text('Hot!');
+        document.body.style.backgroundColor = '#b84dff';
+    } else if (difference >= 1 && difference <= 9) {
+        $('#feedback').text('Very Hot!!');
+        document.body.style.backgroundColor = '#fc0446';
+    } else {
+        $('#feedback').text('You got it. Well done!');
+        document.body.style.backgroundColor = '#ff0404';
+        document.getElementById("userGuess").disabled = true;
+        document.getElementById("guessButton").disabled = true;
+    }
+}
+
+// Function to provide relative feedback to the user
+function relativeFeedback(secretNumber, oldGuess, newGuess) {
+    var oldDiff = parseInt(Math.abs(secretNumber - oldGuess));
+    var newDiff = parseInt(Math.abs(secretNumber - newGuess));
+    if (newDiff > oldDiff) {
+        $('#relative-feedback').text('You are colder than the last guess!');
+    } else if (newDiff == oldDiff) {
+        $('#relative-feedback').text('You are as far as your previous guess!');
+    } else {
+        $('#relative-feedback').text('You are hotter than the last guess!');
+    }
+}
+
+// Function to count the number of guesses
+function guessCounter(counter) {
+    $('#count').text(counter);
+}
+
+// Function to show the history of guesses
+function guessHistory() {
+    $('#guessList').append('<li>' + parseInt($('#userGuess').val(), 10) + '</li>');
+}
