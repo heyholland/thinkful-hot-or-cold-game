@@ -2,7 +2,7 @@ $(document).ready(function () {
 
     // Function to generate the random number
     function secretNum(min, max) {
-        secretNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+        var secretNumber = Math.floor(Math.random() * (max - min + 1)) + min;
         return secretNumber;
     }
 
@@ -18,7 +18,60 @@ $(document).ready(function () {
     var counter = 30;
     $('#count').text(counter);
 
-    $('.new').on('click', newGame);
+    // Function to start a new game
+    function newGame() {
+        document.location.reload(true);
+    }
+
+    // Function to provide feedback to the user
+    function guessFeedback(secretNumber, guessedNumber) {
+        var difference = Math.abs(secretNumber - guessedNumber);
+        if (difference >= 50) {
+            $('#feedback').text('Ice Cold!');
+            document.body.style.backgroundColor = '#002cb3';
+        } else if (difference >= 30 && difference <= 49) {
+            $('#feedback').text('Cold!');
+            document.body.style.backgroundColor = '#3333cc';
+        } else if (difference >= 20 && difference <= 29) {
+            $('#feedback').text('Warm!');
+            document.body.style.backgroundColor = '#8533ff';
+        } else if (difference >= 10 && difference <= 19) {
+            $('#feedback').text('Hot!');
+            document.body.style.backgroundColor = '#b84dff';
+        } else if (difference >= 1 && difference <= 9) {
+            $('#feedback').text('Very Hot!!');
+            document.body.style.backgroundColor = '#fc0446';
+        } else {
+            $('#feedback').text('You got it. Well done!');
+            document.body.style.backgroundColor = '#ff0404';
+            document.getElementById("userGuess").disabled = true;
+            document.getElementById("guessButton").disabled = true;
+        }
+    }
+
+    // Function to provide relative feedback to the user
+    function relativeFeedback(secretNumber, oldGuess, newGuess) {
+        var oldDiff = parseInt(Math.abs(secretNumber - oldGuess));
+        var newDiff = parseInt(Math.abs(secretNumber - newGuess));
+        if (newDiff > oldDiff) {
+            $('#relative-feedback').text('You are colder than the last guess!');
+        } else if (newDiff === oldDiff) {
+            $('#relative-feedback').text('You are as far as your previous guess!');
+        } else {
+            $('#relative-feedback').text('You are hotter than the last guess!');
+        }
+    }
+
+    // Function to count the number of guesses
+    function guessCounter(counter) {
+        $('#count').text(counter);
+    }
+
+    // Function to show the history of guesses
+    function guessHistory() {
+        $('#guessList').append('<li>' + parseInt($('#userGuess').val(), 10) + '</li>');
+    }
+
 
     // Function to implement a simple validation of the iser input
     function validation(guessedNumber) {
@@ -35,7 +88,7 @@ $(document).ready(function () {
             guessFeedback(secretNumber, guessedNumber);
         }
 
-        if (guessedNumber != '' && guessedNumber <= 100) {
+        if (guessedNumber !== '' && guessedNumber <= 100) {
             guessFeedback(secretNumber, guessedNumber);
             counter--;
             guessHistory();
@@ -53,6 +106,10 @@ $(document).ready(function () {
         guessCounter(counter);
     }
 
+
+
+    $('.new').on('click', newGame);
+
     $('#guessButton').on('click', function () {
         var guessedNumber = parseInt($('#userGuess').val(), 10);
         var newGuess = parseInt(guessedNumber);
@@ -66,7 +123,7 @@ $(document).ready(function () {
     });
 
     $('#userGuess').on('keypress', function (e) {
-        if (e.which == 13) {
+        if (e.which === 13) {
             e.preventDefault();
             var guessedNumber = parseInt($('#userGuess').val(), 10);
             var newGuess = parseInt(guessedNumber);
@@ -91,57 +148,3 @@ $(document).ready(function () {
     });
 
 });
-
-// Function to start a new game
-function newGame() {
-    document.location.reload(true);
-}
-
-// Function to provide feedback to the user
-function guessFeedback(secretNumber, guessedNumber) {
-    var difference = Math.abs(secretNumber - guessedNumber);
-    if (difference >= 50) {
-        $('#feedback').text('Ice Cold!');
-        document.body.style.backgroundColor = '#002cb3';
-    } else if (difference >= 30 && difference <= 49) {
-        $('#feedback').text('Cold!');
-        document.body.style.backgroundColor = '#3333cc';
-    } else if (difference >= 20 && difference <= 29) {
-        $('#feedback').text('Warm!');
-        document.body.style.backgroundColor = '#8533ff';
-    } else if (difference >= 10 && difference <= 19) {
-        $('#feedback').text('Hot!');
-        document.body.style.backgroundColor = '#b84dff';
-    } else if (difference >= 1 && difference <= 9) {
-        $('#feedback').text('Very Hot!!');
-        document.body.style.backgroundColor = '#fc0446';
-    } else {
-        $('#feedback').text('You got it. Well done!');
-        document.body.style.backgroundColor = '#ff0404';
-        document.getElementById("userGuess").disabled = true;
-        document.getElementById("guessButton").disabled = true;
-    }
-}
-
-// Function to provide relative feedback to the user
-function relativeFeedback(secretNumber, oldGuess, newGuess) {
-    var oldDiff = parseInt(Math.abs(secretNumber - oldGuess));
-    var newDiff = parseInt(Math.abs(secretNumber - newGuess));
-    if (newDiff > oldDiff) {
-        $('#relative-feedback').text('You are colder than the last guess!');
-    } else if (newDiff == oldDiff) {
-        $('#relative-feedback').text('You are as far as your previous guess!');
-    } else {
-        $('#relative-feedback').text('You are hotter than the last guess!');
-    }
-}
-
-// Function to count the number of guesses
-function guessCounter(counter) {
-    $('#count').text(counter);
-}
-
-// Function to show the history of guesses
-function guessHistory() {
-    $('#guessList').append('<li>' + parseInt($('#userGuess').val(), 10) + '</li>');
-}
